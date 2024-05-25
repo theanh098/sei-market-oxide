@@ -3,7 +3,6 @@
 
 mod database;
 mod error;
-mod openapi;
 mod server;
 mod service;
 mod stream;
@@ -90,7 +89,10 @@ pub async fn server() {
     let address = "0.0.0.0:8098";
 
     let app = Router::new()
-        .merge(SwaggerUi::new("/docs").url("/api-docs/openapi.json", openapi::ApiDoc::openapi()))
+        .merge(
+            SwaggerUi::new("/docs")
+                .url("/api-docs/openapi.json", server::openapi::ApiDoc::openapi()),
+        )
         .route("/api/v1/", get(|| async { "Hello, 🦀!" }))
         .route("/api/v1/collections", get(api::collection::get_collections))
         .with_state(AppState::init(&db_url, redis_url).await);
