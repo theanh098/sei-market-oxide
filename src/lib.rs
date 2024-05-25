@@ -3,16 +3,26 @@
 
 mod database;
 mod error;
+mod openapi;
 mod server;
 mod service;
 mod stream;
 
-use axum::{routing::get, Router};
+use crate::server::api;
+use axum::{routing::get, Json, Router};
+
 use sea_orm::{ConnectOptions, Database};
 use server::extract::state::AppState;
 use service::CosmosClient;
 use stream::{create_subcribe_message, cw721, pallet, stream_handler};
 use tendermint_rpc::query::{EventType, Query};
+use tokio::net::TcpListener;
+
+use utoipa::{
+    openapi::security::{ApiKey, ApiKeyValue, SecurityScheme},
+    Modify, OpenApi,
+};
+use utoipa_swagger_ui::SwaggerUi;
 
 static PALLET_API_URL: &'static str = "https://api.pallet.exchange/api";
 
@@ -80,7 +90,9 @@ pub async fn server() {
     let address = "0.0.0.0:8098";
 
     let app = Router::new()
-        .route("/", get(|| async { "Hello, World!" }))
+        .merge(SwaggerUi::new("/docs").url("/api-docs/openapi.json", openapi::ApiDoc::openapi()))
+        .route("/api/v1/", get(|| async { "Hello, 🦀!" }))
+        .route("/api/v1/collections", get(api::collection::get_collections))
         .with_state(AppState::init(&db_url, redis_url).await);
 
     let listener = tokio::net::TcpListener::bind(address).await.unwrap();

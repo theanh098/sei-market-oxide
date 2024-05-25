@@ -41,6 +41,8 @@ tokio-tungstenite = { version = "*", features = ["native-tls"] }
 enumscribe= "*"
 base64 = "*"
 futures-util = "*"
+utoipa-swagger-ui = { version = "*", features = ["axum"] }
+utoipa = { version = "*", features = ["axum_extras"] }
 
 [dependencies.sea-orm]
 version = "*"
