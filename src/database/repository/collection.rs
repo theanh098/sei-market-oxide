@@ -1,10 +1,13 @@
 use crate::{
     database::entity::{collection, prelude::Collection},
+    server::api::collection::{SortBy, SortDirection},
     service::CollectionMetadata,
 };
 use sea_orm::{
-    prelude::Decimal, sea_query::OnConflict, DatabaseConnection, DbErr, EntityTrait, Set,
+    prelude::Decimal, query, sea_query::OnConflict, DatabaseBackend, DatabaseConnection, DbErr,
+    EntityTrait, FromQueryResult, Set, Statement,
 };
+use serde_json::Value;
 
 pub async fn find_by_address(
     db: &DatabaseConnection,
@@ -37,6 +40,34 @@ pub async fn create(db: &DatabaseConnection, params: CreateCollectionParams) -> 
         .await?;
 
     Ok(())
+}
+
+pub async fn find_collections_with_stats(
+    db: &DatabaseConnection,
+    search: Option<String>,
+    page: u64,
+    limit: u8,
+    _sort_by: SortBy,
+    _sort_direction: SortDirection,
+) -> Result<Vec<Value>, DbErr> {
+    let skip = (page - 1) * limit as u64;
+
+    let search = search
+        .map(|s| format!("LOWER(name) LIKE '%{}%'", s.to_lowercase()))
+        .unwrap_or("1 = 1".to_owned());
+
+    let collections = query::JsonValue::find_by_statement(Statement::from_sql_and_values(
+        DatabaseBackend::Postgres,
+        format!(
+            "SELECT * FROM collection_view WHERE {} OFFSET $1 LIMIT $2;",
+            search
+        ),
+        [skip.into(), limit.into()],
+    ))
+    .all(db)
+    .await?;
+
+    Ok(collections)
 }
 
 pub struct CreateCollectionParams {

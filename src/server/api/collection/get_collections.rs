@@ -1,9 +1,17 @@
-use crate::server::extract::{
-    state::Postgres,
-    validate::{self, ValidatedQuery},
+use crate::{
+    database::repository::collection,
+    error::AppError,
+    server::{
+        extract::{
+            state::Postgres,
+            validate::{self, ValidatedQuery},
+        },
+        serialization::{PaginatedData, SerializedResponse},
+    },
 };
-use axum::extract::Query;
+use axum::{extract::Query, Json};
 use serde::Deserialize;
+use serde_json::Value;
 use utoipa::{IntoParams, ToSchema};
 use validator::Validate;
 
@@ -18,7 +26,7 @@ pub struct Params {
     pub sort_direction: SortDirection,
 }
 
-#[derive(Deserialize, ToSchema)]
+#[derive(Deserialize, ToSchema, Debug)]
 pub enum SortBy {
     #[serde(rename = "1h")]
     _1h,
@@ -36,7 +44,7 @@ pub enum SortBy {
     All,
 }
 
-#[derive(Deserialize, ToSchema)]
+#[derive(Deserialize, ToSchema, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum SortDirection {
     Desc,
@@ -65,7 +73,17 @@ pub async fn get_collections(
         sort_by,
         sort_direction,
     }): ValidatedQuery<Params>,
-    Postgres(_db): Postgres,
-) {
-    println!("{}", limit)
+    Postgres(db): Postgres,
+) -> Result<Json<Value>, AppError> {
+    let collections =
+        collection::find_collections_with_stats(&db, search, page, limit, sort_by, sort_direction)
+            .await?;
+
+    let data = PaginatedData {
+        nodes: collections,
+        page,
+        total: 30,
+    };
+
+    data.into_response()
 }
