@@ -1,0 +1,55 @@
+[package]
+name = "oxide-sei-market"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+name = "server"
+path = "./src/bin/server.rs"
+
+[[bin]]
+name = "mrkt-stream"
+path = "./src/bin/mrkt.rs"
+
+[[bin]]
+name = "pallet-stream"
+path = "./src/bin/pallet.rs"
+
+[[bin]]
+name = "cw721-stream"
+path = "./src/bin/cw721.rs"
+
+[dependencies]
+axum = { version = "*", features = ["http2"] }
+serde = { version = "*", features = ["derive"] }
+tokio = { version = "*", features = ["full"] }
+serde_json = "*"
+chrono = "*"
+deadpool-redis = "*"
+dotenv ="*"
+axum-extra = { version = "*", features = ["typed-header"] }
+validator = { version = "*", features = ["derive"] }
+uuid = { version = "*", features = ["v4"] }
+thiserror = "*"
+jsonwebtoken = "*"
+reqwest = { version = "*", features = ["json"] }
+prost = "*"
+tendermint-rpc = { version = "*", features = ["http-client"] }
+tendermint = "*"
+tokio-tungstenite = { version = "*", features = ["native-tls"] }
+enumscribe= "*"
+base64 = "*"
+futures-util = "*"
+
+[dependencies.sea-orm]
+version = "*"
+features = [
+    "sqlx-postgres", 
+    "runtime-tokio-native-tls", 
+    "macros", "with-chrono", 
+    "sea-orm-internal", 
+    "with-json", 
+    "with-uuid" ,
+    "debug-print"
+]

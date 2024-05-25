@@ -1,0 +1,275 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model collection {
+  address     String        @id @db.VarChar
+  name        String        @db.VarChar
+  symbol      String        @db.VarChar
+  image       String?       @db.VarChar
+  banner      String?       @db.VarChar
+  description String?       @db.VarChar
+  royalty     Decimal?      @db.Decimal(90, 2)
+  supply      Int           @default(1)
+  socials     Json?
+  nft         nft[]
+  transaction transaction[]
+}
+
+model collection_offer {
+  tx_hash            String   @db.VarChar
+  created_date       DateTime @db.Timestamptz(3)
+  buyer_address      String   @db.VarChar
+  collection_address String   @db.VarChar
+  price              Decimal  @db.Decimal(90, 2)
+  quantity           Int
+  start_date         DateTime @db.Timestamptz(3)
+  end_date           DateTime @db.Timestamptz(3)
+  denom              String   @db.VarChar
+  current_quantity   Int      @default(0)
+  id                 Int      @id @default(autoincrement())
+
+  @@unique([collection_address, buyer_address, price])
+}
+
+model collection_snapshot {
+  id                 Int      @id @default(autoincrement())
+  collection_address String   @db.VarChar
+  date               DateTime @default(now()) @db.Timestamptz(3)
+  floor              Decimal  @db.Decimal(90, 2)
+  volume_of_24h      Decimal  @db.Decimal(90, 2)
+
+  @@index([collection_address, date])
+  @@index([date])
+}
+
+model config {
+  key   String @id @db.VarChar
+  value String @db.VarChar
+}
+
+model failure_stream_tx {
+  id      Int            @id @default(autoincrement())
+  date    DateTime       @default(now()) @db.Timestamptz(3)
+  tx_hash String         @unique @db.VarChar
+  action  String         @db.VarChar(26)
+  event   Json
+  context stream_context @default(mrkt)
+  message String?        @db.VarChar
+}
+
+model launchpad_collection {
+  collection_address    String       @id @db.VarChar
+  admin                 String
+  name                  String       @db.VarChar
+  symbol                String       @db.VarChar
+  supply                Int
+  token_uri             String       @db.VarChar
+  royalty_percent       Int
+  royalty_wallet        String       @db.VarChar
+  next_token_id         Int
+  iterated_uri          Boolean      @default(false)
+  start_order           Int          @default(1)
+  frozen                Boolean      @default(false)
+  hidden_metadata       Boolean      @default(false)
+  placeholder_token_uri String?      @db.VarChar
+  withdraw_address      String       @db.VarChar
+  start_time            DateTime?    @db.Timestamptz(3)
+  end_time              DateTime?    @db.Timestamptz(3)
+  banner                String[]
+  avatar                String       @db.VarChar
+  description           String?      @db.VarChar
+  mint_group            mint_group[]
+}
+
+model listing_nft {
+  tx_hash                   String        @db.VarChar
+  created_date              DateTime      @db.Timestamptz(3)
+  nft_id                    Int           @unique
+  collection_address        String        @db.VarChar
+  sale_type                 sale_type
+  seller_address            String        @db.VarChar
+  price                     Decimal       @db.Decimal(90, 2)
+  start_date                DateTime?     @db.Timestamptz(3)
+  end_date                  DateTime?     @db.Timestamptz(3)
+  min_bid_increment_percent Decimal?      @db.Decimal(90, 2)
+  denom                     String        @db.VarChar
+  id                        Int           @id @default(autoincrement())
+  expiration_time           Int?
+  market                    marketplace   @default(mrkt)
+  nft                       nft           @relation(fields: [nft_id], references: [id])
+  nft_bidding               nft_bidding[]
+}
+
+model mint_group {
+  id                   Int                  @id @default(autoincrement())
+  collection_address   String               @db.VarChar
+  name                 String               @db.VarChar
+  whitelist            String[]
+  max_tokens           Int
+  mint_price           Decimal              @db.Decimal(90, 2)
+  creators             String               @db.VarChar
+  start_time           DateTime?            @db.Timestamptz(3)
+  end_time             DateTime?            @db.Timestamptz(3)
+  launchpad_collection launchpad_collection @relation(fields: [collection_address], references: [collection_address])
+
+  @@index([collection_address])
+}
+
+model mint_info {
+  id                 Int    @id @default(autoincrement())
+  collection_address String @db.VarChar
+  group_name         String @db.VarChar
+  recipient          String @db.VarChar
+  token_id           String
+
+  @@unique([collection_address, group_name, recipient, token_id])
+}
+
+model missing_stream_block {
+  id      Int            @id @default(autoincrement())
+  height  String         @db.VarChar
+  context stream_context
+}
+
+model nft {
+  id            Int            @id @default(autoincrement())
+  token_address String         @db.VarChar
+  token_id      String         @db.VarChar
+  name          String?        @db.VarChar
+  token_uri     String         @db.VarChar
+  image         String?        @db.VarChar
+  description   String?        @db.VarChar
+  owner_address String?        @db.VarChar
+  listing_nft   listing_nft?
+  collection    collection     @relation(fields: [token_address], references: [address])
+  nft_activity  nft_activity[]
+  nft_offer     nft_offer[]
+  nft_trait     nft_trait[]
+
+  @@unique([token_address, token_id])
+  @@index([token_address])
+  @@index([token_address, token_id])
+}
+
+model nft_activity {
+  tx_hash        String            @db.VarChar
+  seller_address String?           @db.VarChar
+  buyer_address  String?           @db.VarChar
+  date           DateTime          @db.Timestamptz(3)
+  price          Decimal           @db.Decimal(90, 2)
+  denom          String            @db.VarChar
+  event_kind     nft_activity_kind
+  metadata       Json
+  nft_id         Int
+  id             Int               @id @default(autoincrement())
+  market         marketplace       @default(mrkt)
+  nft            nft               @relation(fields: [nft_id], references: [id])
+}
+
+model nft_bidding {
+  tx_hash       String      @db.VarChar
+  created_date  DateTime    @db.Timestamptz(3)
+  buyer_address String      @db.VarChar
+  price         Decimal     @db.Decimal(90, 2)
+  denom         String      @db.VarChar
+  listing_id    Int
+  id            Int         @id @default(autoincrement())
+  listing_nft   listing_nft @relation(fields: [listing_id], references: [id], onDelete: Cascade)
+}
+
+model nft_offer {
+  tx_hash       String   @db.VarChar
+  created_date  DateTime @db.Timestamptz(3)
+  nft_id        Int
+  price         Decimal  @db.Decimal(90, 2)
+  buyer_address String   @db.VarChar
+  start_date    DateTime @db.Timestamptz(3)
+  end_date      DateTime @db.Timestamptz(3)
+  denom         String   @db.VarChar
+  id            Int      @id @default(autoincrement())
+  nft           nft      @relation(fields: [nft_id], references: [id])
+
+  @@unique([nft_id, buyer_address, price])
+}
+
+model nft_trait {
+  id           Int     @id @default(autoincrement())
+  attribute    String  @db.VarChar
+  value        String  @db.VarChar
+  display_type String? @db.VarChar
+  nft_id       Int
+  nft          nft     @relation(fields: [nft_id], references: [id])
+}
+
+model stream_tx {
+  id         Int            @id @default(autoincrement())
+  date       DateTime       @default(now()) @db.Timestamptz(3)
+  tx_hash    String         @db.VarChar
+  action     String         @db.VarChar(26)
+  is_failure Boolean        @default(false)
+  event      Json
+  message    String?        @db.VarChar
+  context    stream_context @default(mrkt)
+}
+
+model transaction {
+  txn_hash           String      @db.VarChar
+  date               DateTime    @db.Timestamptz(3)
+  volume             Decimal     @db.Decimal(90, 2)
+  collection_address String      @db.VarChar
+  buyer_address      String      @db.VarChar
+  seller_address     String      @db.VarChar
+  id                 Int         @id @default(autoincrement())
+  market             marketplace @default(mrkt)
+  collection         collection  @relation(fields: [collection_address], references: [address])
+
+  @@index([collection_address, date])
+  @@index([collection_address])
+}
+
+model user {
+  address     String  @id @db.VarChar
+  is_new_user Boolean @default(true)
+}
+
+model user_loyalty_point {
+  id             Int                @id @default(autoincrement())
+  wallet_address String             @db.VarChar
+  date           DateTime           @db.Timestamptz(3)
+  kind           loyalty_point_kind
+  point          Int
+}
+
+enum loyalty_point_kind {
+  sell
+  buy
+  bid
+  xp
+}
+
+enum marketplace {
+  mrkt
+  pallet
+}
+
+enum nft_activity_kind {
+  list
+  delist
+  sale
+  make_offer
+  cancel_offer
+}
+
+enum sale_type {
+  fixed
+  auction
+}
+
+enum stream_context {
+  mrkt
+  cwr721
+  pallet
+  launchpad
+}

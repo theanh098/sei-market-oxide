@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "seagen": "sea generate entity -o src/database/entity --with-serde both"
+  },
+  "dependencies": {
+    "prisma": "^5.14.0"
+  }
+}
