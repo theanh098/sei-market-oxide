@@ -1,19 +1,9 @@
 use crate::{
     database::repository::{self},
     error::AppError,
-    server::{
-        extract::{
-            state::Postgres,
-        },
-    },
+    server::extract::state::Postgres,
 };
-
 use chrono::{Months, Utc};
-
-
-
-
-
 
 #[utoipa::path(
   get,

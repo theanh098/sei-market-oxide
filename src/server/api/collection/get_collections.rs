@@ -3,14 +3,11 @@ use crate::{
     error::AppError,
     server::{
         deserialization::SortDirection,
-        extract::{
-            state::Postgres,
-            validate::{ValidatedQuery},
-        },
+        extract::{state::Postgres, validate::ValidatedQuery},
         serialization::{PaginatedData, SerializedResponse},
     },
 };
-use axum::{Json};
+use axum::Json;
 use serde::Deserialize;
 use serde_json::Value;
 use utoipa::{IntoParams, ToSchema};
