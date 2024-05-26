@@ -99,14 +99,14 @@ async fn find_leaderboard_participants_by_date(
         Alias::new("tmp"),
     );
 
-    if let Some((page, limit)) = paging {
-        let offset = (page - 1) * limit as u64;
-        query.limit(limit as u64);
-        query.offset(offset);
-    }
-
     if let Some(wallet_address) = wallet_address {
         query.and_where(Expr::cust("tmp.wallet_address").eq(wallet_address));
+    } else {
+        if let Some((page, limit)) = paging {
+            let offset = (page - 1) * limit as u64;
+            query.limit(limit as u64);
+            query.offset(offset);
+        }
     }
 
     let participants = sea_orm::query::JsonValue::find_by_statement(Statement::from_string(
