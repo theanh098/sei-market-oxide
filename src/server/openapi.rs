@@ -1,4 +1,5 @@
 use super::api::collection::{SortBy, __path_get_collections};
+use super::api::leaderboard::__path_get_leaderboad;
 use super::deserialization::SortDirection;
 
 use utoipa::{
@@ -15,7 +16,8 @@ use utoipa::{
     contact (name = "thoanh098", url = "https://github.com/theanh098")
   ),
   paths(
-      get_collections
+      get_collections,
+      get_leaderboad,
     ),
     components(
       schemas(SortDirection,SortBy),

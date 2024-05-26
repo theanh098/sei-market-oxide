@@ -60,4 +60,4 @@
 
 
 
-       "SELECT "collection_view"."address", "collection_view"."name", "collection_view"."symbol", "collection_view"."image", "collection_view"."banner", "collection_view"."description", "collection_view"."royalty", "collection_view"."supply", "collection_view"."socials", "collection_view"."listed", "collection_view"."floor_price", "collection_view"."ceiling_price", "collection_view"."sales", "collection_view"."volume", "collection_view"."volume_of_1h", "collection_view"."volume_of_24h", "collection_view"."volume_of_30d" FROM "collection_view" WHERE "collection_view"."address" LIKE '%a%' LIMIT 11 OFFSET 0"
+     

@@ -95,6 +95,7 @@ pub async fn server() {
         )
         .route("/api/v1/", get(|| async { "Hello, 🦀!" }))
         .route("/api/v1/collections", get(api::collection::get_collections))
+        .route("/api/v1/leaderboard", get(api::leaderboard::get_leaderboad))
         .with_state(AppState::init(&db_url, redis_url).await);
 
     let listener = tokio::net::TcpListener::bind(address).await.unwrap();
