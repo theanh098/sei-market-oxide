@@ -1,11 +1,18 @@
 use crate::{
-    database::entity::{collection, prelude::Collection},
-    server::api::collection::{SortBy, SortDirection},
+    database::{
+        entity::{
+            collection, collection_view,
+            prelude::{Collection, CollectionView},
+        },
+        model::Count,
+    },
+    server::{api::collection::SortBy, deserialization::SortDirection},
     service::CollectionMetadata,
 };
 use sea_orm::{
-    prelude::Decimal, query, sea_query::OnConflict, DatabaseBackend, DatabaseConnection, DbErr,
-    EntityTrait, FromQueryResult, Set, Statement,
+    prelude::Decimal, query, sea_query::OnConflict, ColumnTrait, DatabaseBackend,
+    DatabaseConnection, DbBackend, DbErr, EntityTrait, FromQueryResult, Order, QueryFilter,
+    QueryOrder, QuerySelect, QueryTrait, Set, Statement,
 };
 use serde_json::Value;
 
@@ -47,27 +54,41 @@ pub async fn find_collections_with_stats(
     search: Option<String>,
     page: u64,
     limit: u8,
-    _sort_by: SortBy,
-    _sort_direction: SortDirection,
-) -> Result<Vec<Value>, DbErr> {
+    sort_by: SortBy,
+    sort_direction: SortDirection,
+) -> Result<(Vec<collection_view::Model>, i64), DbErr> {
     let skip = (page - 1) * limit as u64;
 
-    let search = search
-        .map(|s| format!("LOWER(name) LIKE '%{}%'", s.to_lowercase()))
-        .unwrap_or("1 = 1".to_owned());
+    let sort_by = match sort_by {
+        SortBy::All => collection_view::Column::Volume,
+        SortBy::_1h => collection_view::Column::VolumeOf1h,
+        SortBy::_24h => collection_view::Column::VolumeOf24h,
+        SortBy::_7d => collection_view::Column::VolumeOf7d,
+        SortBy::_30d => collection_view::Column::VolumeOf30d,
+    };
 
-    let collections = query::JsonValue::find_by_statement(Statement::from_sql_and_values(
-        DatabaseBackend::Postgres,
-        format!(
-            "SELECT * FROM collection_view WHERE {} OFFSET $1 LIMIT $2;",
-            search
-        ),
-        [skip.into(), limit.into()],
-    ))
-    .all(db)
-    .await?;
+    let collections = CollectionView::find()
+        .apply_if(search.as_ref(), |query, search| {
+            query.filter(collection_view::Column::Name.contains(search))
+        })
+        .order_by(sort_by, sort_direction.into_order())
+        .limit(limit as u64)
+        .offset(skip)
+        .all(db)
+        .await?;
 
-    Ok(collections)
+    let total = Collection::find()
+        .select_only()
+        .column_as(collection::Column::Address.count(), "count")
+        .apply_if(search, |query, search| {
+            query.filter(collection::Column::Name.contains(search))
+        })
+        .into_model::<Count>()
+        .one(db)
+        .await?
+        .unwrap_or_default();
+
+    Ok((collections, total.count))
 }
 
 pub struct CreateCollectionParams {

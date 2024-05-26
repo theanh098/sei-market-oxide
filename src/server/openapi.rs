@@ -1,4 +1,5 @@
-use super::api::collection::{SortBy, SortDirection, __path_get_collections};
+use super::api::collection::{SortBy, __path_get_collections};
+use super::deserialization::SortDirection;
 
 use utoipa::{
     openapi::security::{HttpAuthScheme, HttpBuilder, SecurityScheme},

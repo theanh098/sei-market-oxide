@@ -58,31 +58,6 @@ model failure_stream_tx {
   context stream_context @default(mrkt)
   message String?        @db.VarChar
 }
-
-model launchpad_collection {
-  collection_address    String       @id @db.VarChar
-  admin                 String
-  name                  String       @db.VarChar
-  symbol                String       @db.VarChar
-  supply                Int
-  token_uri             String       @db.VarChar
-  royalty_percent       Int
-  royalty_wallet        String       @db.VarChar
-  next_token_id         Int
-  iterated_uri          Boolean      @default(false)
-  start_order           Int          @default(1)
-  frozen                Boolean      @default(false)
-  hidden_metadata       Boolean      @default(false)
-  placeholder_token_uri String?      @db.VarChar
-  withdraw_address      String       @db.VarChar
-  start_time            DateTime?    @db.Timestamptz(3)
-  end_time              DateTime?    @db.Timestamptz(3)
-  banner                String[]
-  avatar                String       @db.VarChar
-  description           String?      @db.VarChar
-  mint_group            mint_group[]
-}
-
 model listing_nft {
   tx_hash                   String        @db.VarChar
   created_date              DateTime      @db.Timestamptz(3)
@@ -100,31 +75,6 @@ model listing_nft {
   market                    marketplace   @default(mrkt)
   nft                       nft           @relation(fields: [nft_id], references: [id])
   nft_bidding               nft_bidding[]
-}
-
-model mint_group {
-  id                   Int                  @id @default(autoincrement())
-  collection_address   String               @db.VarChar
-  name                 String               @db.VarChar
-  whitelist            String[]
-  max_tokens           Int
-  mint_price           Decimal              @db.Decimal(90, 2)
-  creators             String               @db.VarChar
-  start_time           DateTime?            @db.Timestamptz(3)
-  end_time             DateTime?            @db.Timestamptz(3)
-  launchpad_collection launchpad_collection @relation(fields: [collection_address], references: [collection_address])
-
-  @@index([collection_address])
-}
-
-model mint_info {
-  id                 Int    @id @default(autoincrement())
-  collection_address String @db.VarChar
-  group_name         String @db.VarChar
-  recipient          String @db.VarChar
-  token_id           String
-
-  @@unique([collection_address, group_name, recipient, token_id])
 }
 
 model missing_stream_block {

@@ -1,4 +1,7 @@
-use axum::{response::IntoResponse, Json};
+use axum::{
+    response::{IntoResponse, Response},
+    Json,
+};
 use serde::Serialize;
 use serde_json::{value::Serializer, Value};
 
@@ -8,7 +11,7 @@ use crate::error::AppError;
 pub struct PaginatedData<T> {
     pub nodes: Vec<T>,
     pub page: u64,
-    pub total: u64,
+    pub total: i64,
 }
 
 pub trait SerializedResponse {
@@ -58,3 +61,13 @@ fn recursively_remove_null_fields(value: &mut Value) {
         _ => {}
     }
 }
+
+// async fn remove_null_from_response<B: Serialize>(
+//     mut response: Response<B>,
+// ) -> Result<Response<B>, AppError> {
+//     let body = response.body_mut();
+
+//     body.remove_null_fields()?;
+
+//     Ok(response)
+// }

@@ -2,6 +2,7 @@ use crate::{
     database::repository::collection,
     error::AppError,
     server::{
+        deserialization::SortDirection,
         extract::{
             state::Postgres,
             validate::{self, ValidatedQuery},
@@ -44,13 +45,6 @@ pub enum SortBy {
     All,
 }
 
-#[derive(Deserialize, ToSchema, Debug)]
-#[serde(rename_all = "snake_case")]
-pub enum SortDirection {
-    Desc,
-    Asc,
-}
-
 #[utoipa::path(
   get,
   params(
@@ -75,14 +69,14 @@ pub async fn get_collections(
     }): ValidatedQuery<Params>,
     Postgres(db): Postgres,
 ) -> Result<Json<Value>, AppError> {
-    let collections =
+    let (collections, total) =
         collection::find_collections_with_stats(&db, search, page, limit, sort_by, sort_direction)
             .await?;
 
     let data = PaginatedData {
         nodes: collections,
         page,
-        total: 30,
+        total,
     };
 
     data.into_response()
