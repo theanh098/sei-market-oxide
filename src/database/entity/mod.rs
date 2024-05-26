@@ -1,5 +1,3 @@
-pub mod prelude;
-
 pub mod collection;
 pub mod collection_offer;
 pub mod collection_snapshot;

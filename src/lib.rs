@@ -8,19 +8,14 @@ mod service;
 mod stream;
 
 use crate::server::api;
-use axum::{routing::get, Json, Router};
-
+use axum::{routing::get, Router};
 use sea_orm::{ConnectOptions, Database};
 use server::extract::state::AppState;
 use service::CosmosClient;
 use stream::{create_subcribe_message, cw721, pallet, stream_handler};
 use tendermint_rpc::query::{EventType, Query};
-use tokio::net::TcpListener;
 
-use utoipa::{
-    openapi::security::{ApiKey, ApiKeyValue, SecurityScheme},
-    Modify, OpenApi,
-};
+use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
 static PALLET_API_URL: &'static str = "https://api.pallet.exchange/api";

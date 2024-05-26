@@ -3,9 +3,7 @@ use sea_orm::{
     DatabaseTransaction, DbErr, EntityTrait, Set,
 };
 
-use crate::database::entity::{
-    prelude::Transaction, sea_orm_active_enums::Marketplace, transaction,
-};
+use crate::database::entity::{sea_orm_active_enums::Marketplace, transaction};
 
 pub async fn create(
     tx: &DatabaseTransaction,
@@ -22,7 +20,7 @@ pub async fn create(
         ..Default::default()
     };
 
-    Transaction::insert(transaction).exec(tx).await?;
+    transaction::Entity::insert(transaction).exec(tx).await?;
 
     Ok(())
 }

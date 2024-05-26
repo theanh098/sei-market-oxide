@@ -1,15 +1,14 @@
+use crate::database::entity::{sea_orm_active_enums::StreamContext, stream_tx};
 use sea_orm::{
     prelude::DateTimeWithTimeZone, ColumnTrait, DatabaseConnection, DbErr, EntityTrait,
     QueryFilter, Set,
 };
 
-use crate::database::entity::{prelude::StreamTx, sea_orm_active_enums::StreamContext, stream_tx};
-
 pub async fn find_stream_tx_by_tx_hash(
     db: &DatabaseConnection,
     tx_hash: &str,
 ) -> Result<Option<stream_tx::Model>, DbErr> {
-    StreamTx::find()
+    stream_tx::Entity::find()
         .filter(stream_tx::Column::TxHash.eq(tx_hash))
         .one(db)
         .await
@@ -30,7 +29,7 @@ pub async fn create_stream_tx(
         ..Default::default()
     };
 
-    StreamTx::insert(stream_tx).exec(db).await?;
+    stream_tx::Entity::insert(stream_tx).exec(db).await?;
 
     Ok(())
 }

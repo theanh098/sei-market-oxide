@@ -5,12 +5,12 @@ use crate::{
         deserialization::SortDirection,
         extract::{
             state::Postgres,
-            validate::{self, ValidatedQuery},
+            validate::{ValidatedQuery},
         },
         serialization::{PaginatedData, SerializedResponse},
     },
 };
-use axum::{extract::Query, Json};
+use axum::{Json};
 use serde::Deserialize;
 use serde_json::Value;
 use utoipa::{IntoParams, ToSchema};

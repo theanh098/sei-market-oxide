@@ -1,9 +1,8 @@
 use axum::{
-    response::{IntoResponse, Response},
     Json,
 };
 use serde::Serialize;
-use serde_json::{value::Serializer, Value};
+use serde_json::{Value};
 
 use crate::error::AppError;
 

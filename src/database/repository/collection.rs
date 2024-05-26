@@ -1,26 +1,23 @@
 use crate::{
     database::{
-        entity::{
-            collection, collection_view,
-            prelude::{Collection, CollectionView},
-        },
+        entity::{collection, collection_view},
         model::Count,
     },
     server::{api::collection::SortBy, deserialization::SortDirection},
     service::CollectionMetadata,
 };
 use sea_orm::{
-    prelude::Decimal, query, sea_query::OnConflict, ColumnTrait, DatabaseBackend,
-    DatabaseConnection, DbBackend, DbErr, EntityTrait, FromQueryResult, Order, QueryFilter,
-    QueryOrder, QuerySelect, QueryTrait, Set, Statement,
+    prelude::Decimal, sea_query::OnConflict, ColumnTrait,
+    DatabaseConnection, DbErr, EntityTrait, QueryFilter,
+    QueryOrder, QuerySelect, QueryTrait, Set,
 };
-use serde_json::Value;
+
 
 pub async fn find_by_address(
     db: &DatabaseConnection,
     address: &str,
 ) -> Result<Option<collection::Model>, DbErr> {
-    Collection::find_by_id(address).one(db).await
+    collection::Entity::find_by_id(address).one(db).await
 }
 
 pub async fn create(db: &DatabaseConnection, params: CreateCollectionParams) -> Result<(), DbErr> {
@@ -37,7 +34,7 @@ pub async fn create(db: &DatabaseConnection, params: CreateCollectionParams) -> 
         ..Default::default()
     };
 
-    Collection::insert(collection)
+    collection::Entity::insert(collection)
         .on_conflict(
             OnConflict::column(collection::Column::Address)
                 .do_nothing()
@@ -67,7 +64,7 @@ pub async fn find_collections_with_stats(
         SortBy::_30d => collection_view::Column::VolumeOf30d,
     };
 
-    let collections = CollectionView::find()
+    let collections = collection_view::Entity::find()
         .apply_if(search.as_ref(), |query, search| {
             query.filter(collection_view::Column::Name.contains(search))
         })
@@ -77,7 +74,7 @@ pub async fn find_collections_with_stats(
         .all(db)
         .await?;
 
-    let total = Collection::find()
+    let total = collection::Entity::find()
         .select_only()
         .column_as(collection::Column::Address.count(), "count")
         .apply_if(search, |query, search| {

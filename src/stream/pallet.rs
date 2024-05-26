@@ -12,7 +12,6 @@ use crate::{
             nft::{self as NftRepository, CreatePalletListingParams},
             nft_activity::{self as NftActivityRepository, CreateNftActivityParams},
             tracing::{self as TracingRepository, CreateStreamTxParams},
-            transaction::CreateTransactionParams,
         },
         Marketplace, NftActivityKind, StreamContext,
     },

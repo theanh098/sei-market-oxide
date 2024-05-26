@@ -1,16 +1,13 @@
 use sea_orm::{
     prelude::DateTimeUtc,
     sea_query::{
-        query, Alias, Expr, Func, NullOrdering, PostgresQueryBuilder, Query, WindowStatement,
-    },
-    ActiveEnum, ColumnTrait, DatabaseConnection, DatabaseTransaction, DbBackend, DbErr,
-    EntityTrait, FromQueryResult, Order, QueryFilter, Set, Statement,
+        Alias, Expr, Func, NullOrdering, PostgresQueryBuilder, Query, WindowStatement,
+    }, ColumnTrait, DatabaseConnection, DatabaseTransaction, DbBackend, DbErr,
+    EntityTrait, FromQueryResult, Order, Set, Statement,
 };
 
 use crate::database::{
-    entity::{
-        prelude::UserLoyaltyPoint, sea_orm_active_enums::LoyaltyPointKind, user_loyalty_point,
-    },
+    entity::{sea_orm_active_enums::LoyaltyPointKind, user_loyalty_point},
     model::{Count, LeaderboardParticipant},
 };
 
@@ -23,7 +20,9 @@ pub async fn create(tx: &DatabaseTransaction, params: CreateUserPointParams) -> 
         ..Default::default()
     };
 
-    UserLoyaltyPoint::insert(user_point).exec(tx).await?;
+    user_loyalty_point::Entity::insert(user_point)
+        .exec(tx)
+        .await?;
 
     Ok(())
 }

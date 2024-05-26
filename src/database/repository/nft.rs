@@ -1,7 +1,6 @@
 use crate::{
     database::entity::{
         listing_nft, nft, nft_trait,
-        prelude::{ListingNft, Nft, NftTrait},
         sea_orm_active_enums::{Marketplace, SaleType},
     },
     service::NftAttribute,
@@ -18,7 +17,7 @@ pub async fn find_by_address_and_token_id(
     token_address: &str,
     token_id: &str,
 ) -> Result<Option<nft::Model>, DbErr> {
-    Nft::find()
+    nft::Entity::find()
         .filter(nft::Column::TokenAddress.eq(token_address))
         .filter(nft::Column::TokenId.eq(token_id))
         .one(db)
@@ -29,7 +28,7 @@ pub async fn find_listing_by_nft_id(
     db: &DatabaseConnection,
     nft_id: i32,
 ) -> Result<Option<listing_nft::Model>, DbErr> {
-    ListingNft::find()
+    listing_nft::Entity::find()
         .filter(listing_nft::Column::NftId.eq(nft_id))
         .one(db)
         .await
@@ -46,7 +45,7 @@ pub async fn update_owner(
         ..Default::default()
     };
 
-    Nft::update_many()
+    nft::Entity::update_many()
         .set(nft)
         .filter(nft::Column::TokenAddress.eq(token_address))
         .filter(nft::Column::TokenId.eq(token_id))
@@ -70,7 +69,7 @@ pub async fn create(db: &DatabaseConnection, params: CreateNftParams) -> Result<
         ..Default::default()
     };
 
-    let nft_id = Nft::insert(nft)
+    let nft_id = nft::Entity::insert(nft)
         .on_conflict(
             OnConflict::columns([nft::Column::TokenAddress, nft::Column::TokenId])
                 .do_nothing()
@@ -97,7 +96,7 @@ pub async fn create(db: &DatabaseConnection, params: CreateNftParams) -> Result<
         },
     );
 
-    NftTrait::insert_many(traits)
+    nft_trait::Entity::insert_many(traits)
         .on_empty_do_nothing()
         .exec(db)
         .await?;
@@ -136,7 +135,7 @@ pub async fn create_pallet_listing(
         ..Default::default()
     };
 
-    ListingNft::insert(listing)
+    listing_nft::Entity::insert(listing)
         .on_conflict(
             OnConflict::column(listing_nft::Column::NftId)
                 .do_nothing()
@@ -149,7 +148,7 @@ pub async fn create_pallet_listing(
 }
 
 pub async fn delete_listing_if_exist(tx: &DatabaseTransaction, nft_id: i32) -> Result<(), DbErr> {
-    ListingNft::delete_many()
+    listing_nft::Entity::delete_many()
         .filter(listing_nft::Column::NftId.eq(nft_id))
         .exec(tx)
         .await?;

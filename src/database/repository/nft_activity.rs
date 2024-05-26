@@ -1,6 +1,5 @@
 use crate::database::entity::{
     nft_activity,
-    prelude::NftActivity,
     sea_orm_active_enums::{Marketplace, NftActivityKind},
 };
 use sea_orm::{
@@ -26,7 +25,7 @@ pub async fn create(
         ..Default::default()
     };
 
-    NftActivity::insert(activity).exec(tx).await?;
+    nft_activity::Entity::insert(activity).exec(tx).await?;
 
     Ok(())
 }
