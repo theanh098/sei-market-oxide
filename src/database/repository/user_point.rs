@@ -109,8 +109,6 @@ async fn find_leaderboard_participants_by_date(
         query.and_where(Expr::cust("tmp.wallet_address").eq(wallet_address));
     }
 
-    dbg!(query.to_string(PostgresQueryBuilder));
-
     let participants = sea_orm::query::JsonValue::find_by_statement(Statement::from_string(
         DbBackend::Postgres,
         query.to_string(PostgresQueryBuilder),
