@@ -1,6 +1,7 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
 
+mod background;
 mod database;
 mod error;
 mod server;
@@ -9,6 +10,7 @@ mod stream;
 
 use crate::server::api;
 use axum::{routing::get, Router};
+use background::CronExpression;
 use sea_orm::{ConnectOptions, Database};
 use server::extract::state::AppState;
 use service::CosmosClient;
@@ -98,4 +100,26 @@ pub async fn server() {
     println!("🦀 server is running on port {}", address);
 
     axum::serve(listener, app).await.unwrap();
+}
+
+pub async fn background() {
+    dotenv::dotenv().ok();
+    let db_url = std::env::var("DATABASE_URL").expect("db_url must be set");
+
+    let mut opt = ConnectOptions::new(db_url);
+    opt.sqlx_logging(false);
+
+    let db = Database::connect(opt).await.unwrap();
+
+    background::Background::new()
+        .set_context(db)
+        .add_job(CronExpression::Every10Seconds, |_db| async {
+            println!("hello kitty");
+
+            Ok(())
+        })
+        .start()
+        .await;
+
+    // loop {}
 }

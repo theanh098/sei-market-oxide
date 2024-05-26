@@ -20,6 +20,10 @@ path = "./src/bin/pallet.rs"
 name = "cw721-stream"
 path = "./src/bin/cw721.rs"
 
+[[bin]]
+name = "background"
+path = "./src/bin/background.rs"
+
 [dependencies]
 axum = { version = "*", features = ["http2"] }
 serde = { version = "*", features = ["derive"] }
@@ -43,6 +47,8 @@ base64 = "*"
 futures-util = "*"
 utoipa-swagger-ui = { version = "*", features = ["axum"] }
 utoipa = { version = "*", features = ["axum_extras"] }
+futures = "*"
+cron = "*"
 
 [dependencies.sea-orm]
 version = "*"
