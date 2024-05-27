@@ -1,9 +1,8 @@
 use sea_orm::{
     prelude::DateTimeUtc,
-    sea_query::{
-        Alias, Expr, Func, NullOrdering, PostgresQueryBuilder, Query, WindowStatement,
-    }, ColumnTrait, DatabaseConnection, DatabaseTransaction, DbBackend, DbErr,
-    EntityTrait, FromQueryResult, Order, Set, Statement,
+    sea_query::{Alias, Expr, Func, NullOrdering, PostgresQueryBuilder, Query, WindowStatement},
+    ColumnTrait, DatabaseConnection, DatabaseTransaction, DbBackend, DbErr, EntityTrait,
+    FromQueryResult, Order, Set, Statement,
 };
 
 use crate::database::{

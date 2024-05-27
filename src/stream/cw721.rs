@@ -1,5 +1,5 @@
-use super::shared::create_nft_or_update_owner_or_just_find;
-use super::{find_attribute, Attribute, Event, Transaction};
+use super::shared::{create_nft_or_update_owner_or_just_find, find_attribute, Attribute, Event};
+use super::Transaction;
 use crate::database::repository::tracing::{self as TracingRepository, CreateStreamTxParams};
 use crate::database::StreamContext;
 use crate::error::AppError;

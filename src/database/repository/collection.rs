@@ -7,11 +7,9 @@ use crate::{
     service::CollectionMetadata,
 };
 use sea_orm::{
-    prelude::Decimal, sea_query::OnConflict, ColumnTrait,
-    DatabaseConnection, DbErr, EntityTrait, QueryFilter,
-    QueryOrder, QuerySelect, QueryTrait, Set,
+    prelude::Decimal, sea_query::OnConflict, ColumnTrait, DatabaseConnection, DbErr, EntityTrait,
+    QueryFilter, QueryOrder, QuerySelect, QueryTrait, Set,
 };
-
 
 pub async fn find_by_address(
     db: &DatabaseConnection,

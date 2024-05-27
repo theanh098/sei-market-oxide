@@ -52,6 +52,7 @@ where
 }
 
 impl Claims {
+    #[allow(dead_code)]
     pub fn new(address: String, expired: chrono::Duration) -> Self {
         Self {
             address,
@@ -61,6 +62,7 @@ impl Claims {
 }
 
 impl SubClaims {
+    #[allow(dead_code)]
     pub fn new(address: String, expired: chrono::Duration) -> Self {
         Self {
             sub: address,

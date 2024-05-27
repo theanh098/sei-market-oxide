@@ -12,11 +12,30 @@ use crate::{
     error::AppError,
     service::{get_collection_metadata, get_nft_metadata, CosmosClient},
 };
+use base64::{prelude::BASE64_STANDARD, Engine};
 use sea_orm::{
     prelude::{DateTimeUtc, Decimal},
     DatabaseConnection, DatabaseTransaction,
 };
 use std::str::FromStr;
+
+#[derive(Debug)]
+pub struct Transaction {
+    pub tx_hash: String,
+    pub events: Vec<Event>,
+}
+
+#[derive(serde::Deserialize, serde::Serialize, Debug)]
+pub struct Event {
+    pub r#type: String,
+    pub attributes: Vec<Attribute>,
+}
+
+#[derive(serde::Deserialize, serde::Serialize, Debug)]
+pub struct Attribute {
+    pub key: String,
+    pub value: String,
+}
 
 pub async fn create_collection_if_not_exist(
     db: &DatabaseConnection,
@@ -164,6 +183,67 @@ pub async fn create_activity_transaction_and_point_on_sale(
     .await?;
 
     Ok(db)
+}
+
+pub fn find_attribute(event: &Event, key: &str) -> Result<String, AppError> {
+    event
+        .attributes
+        .iter()
+        .find(|Attribute { key: k, .. }| k == key)
+        .map(|attribute| attribute.value.to_owned())
+        .ok_or(AppError::Unexpected(format!("missing attribute {}", key)))
+}
+
+pub fn to_utf8(base64: &str) -> String {
+    let buffer = BASE64_STANDARD.decode(base64).unwrap_or_default();
+    String::from_utf8(buffer).unwrap_or_default()
+}
+
+impl Transaction {
+    pub fn try_from_value(value: serde_json::Value) -> Result<Transaction, AppError> {
+        let tx_hash = value
+            .get("result")
+            .and_then(|v| v.get("events"))
+            .and_then(|v| v.get("tx.hash"))
+            .and_then(|v| v.get(0))
+            .ok_or(AppError::Unexpected("missing tx.hash attribute".to_owned()))?;
+
+        let serde_json::Value::String(tx_hash) = tx_hash else {
+            return Err(AppError::Unexpected(
+                "missing result.events[tx.hash] is not string".to_owned(),
+            ));
+        };
+
+        let events = value
+            .get("result")
+            .and_then(|v| v.get("data"))
+            .and_then(|v| v.get("value"))
+            .and_then(|v| v.get("TxResult"))
+            .and_then(|v| v.get("result"))
+            .and_then(|v| v.get("events"))
+            .ok_or(AppError::Unexpected(
+                "missing result.data.value.TxResult.result.events attribute".to_owned(),
+            ))?;
+
+        let events = serde_json::from_value::<Vec<Event>>(events.to_owned())?
+            .into_iter()
+            .map(|Event { attributes, r#type }| Event {
+                r#type,
+                attributes: attributes
+                    .into_iter()
+                    .map(|Attribute { key, value }| Attribute {
+                        key: to_utf8(&key),
+                        value: to_utf8(&value),
+                    })
+                    .collect(),
+            })
+            .collect();
+
+        Ok(Transaction {
+            tx_hash: tx_hash.to_owned(),
+            events,
+        })
+    }
 }
 
 pub struct CreateActivityTransactionAndPointOnSaleParams {

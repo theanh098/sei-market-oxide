@@ -1,10 +1,6 @@
-use super::{
-    find_attribute,
-    shared::{
-        create_activity_transaction_and_point_on_sale, create_nft_or_update_owner_or_just_find,
-        CreateActivityTransactionAndPointOnSaleParams,
-    },
-    to_utf8, Event, Transaction,
+use super::shared::{
+    create_activity_transaction_and_point_on_sale, create_nft_or_update_owner_or_just_find,
+    find_attribute, to_utf8, CreateActivityTransactionAndPointOnSaleParams, Event, Transaction,
 };
 use crate::{
     database::{

@@ -1,8 +1,6 @@
-use axum::{
-    Json,
-};
+use axum::Json;
 use serde::Serialize;
-use serde_json::{Value};
+use serde_json::Value;
 
 use crate::error::AppError;
 

@@ -4,6 +4,7 @@ use sea_orm::{
     QueryFilter, Set,
 };
 
+#[allow(dead_code)]
 pub async fn find_stream_tx_by_tx_hash(
     db: &DatabaseConnection,
     tx_hash: &str,

@@ -1,4 +1,3 @@
-use crate::PALLET_CONTRACT_ADDRESS;
 use prost::{DecodeError, Message};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::json;
@@ -8,6 +7,8 @@ use tendermint_rpc::{
     query::Query,
     Client, HttpClient, Order,
 };
+
+use crate::r#static::PALLET_CONTRACT_ADDRESS;
 
 pub struct CosmosClient(HttpClient);
 
@@ -74,6 +75,7 @@ impl CosmosClient {
         self.query_contract(address, msg).await
     }
 
+    #[allow(dead_code)]
     pub async fn get_nft_owner(
         &self,
         address: &str,
@@ -110,6 +112,7 @@ impl CosmosClient {
         Ok(tx)
     }
 
+    #[allow(dead_code)]
     pub async fn get_tx_header(
         &self,
         tx_hash: &str,
@@ -120,6 +123,7 @@ impl CosmosClient {
         Ok(header)
     }
 
+    #[allow(dead_code)]
     pub async fn search_tx(
         &self,
         query: Query,

@@ -1,4 +1,4 @@
-use crate::PALLET_API_URL;
+use crate::r#static::PALLET_API_URL;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
