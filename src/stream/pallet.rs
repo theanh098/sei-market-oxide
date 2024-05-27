@@ -56,10 +56,10 @@ pub async fn tx_handler(db: &DatabaseConnection, client: &CosmosClient, tx: Tran
                 },
             )
             .await
-            .unwrap_or_else(|e| eprintln!("unexpected error when create tracing tx {}", e));
+            .unwrap_or_else(|e| eprintln!("error when create tracing tx \n>>{}", e));
 
             eprintln!(
-                "unexpected error when handle pallet event {} {} \n>>{}",
+                "error when handle pallet event {} {} \n>>{}",
                 action, tx_hash, error
             );
         } else {
@@ -76,7 +76,7 @@ pub async fn tx_handler(db: &DatabaseConnection, client: &CosmosClient, tx: Tran
                 },
             )
             .await
-            .unwrap_or_else(|e| eprintln!("unexpected error when create tracing tx {}", e));
+            .unwrap_or_else(|e| eprintln!("error when create tracing tx \n>>{}", e));
 
             println!("done handle pallet event {} {}", action, tx_hash);
         }
@@ -190,12 +190,12 @@ async fn handle_buy_now(
         tx_hash,
     )))?;
 
-    let db = db.begin().await?;
+    let tx = db.begin().await?;
 
-    NftRepository::delete_listing_if_exist(&db, nft_id).await?;
+    NftRepository::delete_listing_if_exist(&tx, nft_id).await?;
 
     create_activity_transaction_and_point_on_sale(
-        &db,
+        &tx,
         CreateActivityTransactionAndPointOnSaleParams {
             buyer,
             collection_address: token_address,
@@ -210,6 +210,8 @@ async fn handle_buy_now(
         },
     )
     .await?;
+
+    tx.commit().await?;
 
     Ok(())
 }

@@ -37,7 +37,7 @@ pub async fn tx_handler(db: &DatabaseConnection, client: &CosmosClient, tx: Tran
 
         if let Err(error) = result {
             eprintln!(
-                "unexpected error when handle cw721 event {} {} \n>>{}",
+                "error when handle cw721 event {} {} \n>>{}",
                 action, tx_hash, error
             );
 
@@ -54,7 +54,7 @@ pub async fn tx_handler(db: &DatabaseConnection, client: &CosmosClient, tx: Tran
                 },
             )
             .await
-            .unwrap_or_else(|e| eprintln!("unexpected error when create tracing tx {}", e));
+            .unwrap_or_else(|e| eprintln!("error when create tracing tx \n>>{}", e));
         } else {
             println!("done handle cw721 event {} {}", action, tx_hash);
 
@@ -71,7 +71,7 @@ pub async fn tx_handler(db: &DatabaseConnection, client: &CosmosClient, tx: Tran
                 },
             )
             .await
-            .unwrap_or_else(|e| eprintln!("unexpected error when create tracing tx {}", e));
+            .unwrap_or_else(|e| eprintln!("error when create tracing tx \n>>{}", e));
         }
     }
 }

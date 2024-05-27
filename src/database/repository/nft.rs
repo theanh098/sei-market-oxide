@@ -59,8 +59,8 @@ pub async fn create(db: &DatabaseConnection, params: CreateNftParams) -> Result<
     let txn = db.begin().await?;
 
     let nft = nft::ActiveModel {
-        token_address: Set(params.token_address),
-        token_id: Set(params.token_id),
+        token_address: Set(params.token_address.to_owned()),
+        token_id: Set(params.token_id.to_owned()),
         token_uri: Set(params.token_uri),
         description: Set(params.description),
         name: Set(params.name),
@@ -69,15 +69,31 @@ pub async fn create(db: &DatabaseConnection, params: CreateNftParams) -> Result<
         ..Default::default()
     };
 
-    let nft_id = nft::Entity::insert(nft)
+    // Performing an upsert statement without inserting or updating any of the row will result in a DbErr::RecordNotInserted error.
+    let result = nft::Entity::insert(nft)
         .on_conflict(
             OnConflict::columns([nft::Column::TokenAddress, nft::Column::TokenId])
                 .do_nothing()
                 .to_owned(),
         )
-        .exec(db)
-        .await?
-        .last_insert_id;
+        .exec(&txn)
+        .await;
+
+    let nft_id = match result {
+        Ok(result) => result.last_insert_id,
+        Err(error) => {
+            // skip insert traits
+            return if let DbErr::RecordNotInserted = error {
+                let nft = find_by_address_and_token_id(db, &params.token_address, &params.token_id)
+                    .await?
+                    .unwrap();
+
+                Ok(nft.id)
+            } else {
+                Err(error)
+            };
+        }
+    };
 
     let traits = params.traits.unwrap_or_default().into_iter().map(
         |NftAttribute {
@@ -98,7 +114,7 @@ pub async fn create(db: &DatabaseConnection, params: CreateNftParams) -> Result<
 
     nft_trait::Entity::insert_many(traits)
         .on_empty_do_nothing()
-        .exec(db)
+        .exec(&txn)
         .await?;
 
     txn.commit().await?;
@@ -142,9 +158,15 @@ pub async fn create_pallet_listing(
                 .to_owned(),
         )
         .exec(tx)
-        .await?;
-
-    Ok(())
+        .await
+        .map(|_| ())
+        .or_else(|error| {
+            if let DbErr::RecordNotInserted = error {
+                Ok(())
+            } else {
+                Err(error)
+            }
+        })
 }
 
 pub async fn delete_listing_if_exist(tx: &DatabaseTransaction, nft_id: i32) -> Result<(), DbErr> {

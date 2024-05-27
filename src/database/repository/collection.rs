@@ -39,9 +39,15 @@ pub async fn create(db: &DatabaseConnection, params: CreateCollectionParams) -> 
                 .to_owned(),
         )
         .exec(db)
-        .await?;
-
-    Ok(())
+        .await
+        .map(|_| ())
+        .or_else(|error| {
+            if let DbErr::RecordNotInserted = error {
+                Ok(())
+            } else {
+                Err(error)
+            }
+        })
 }
 
 pub async fn find_collections_with_stats(
