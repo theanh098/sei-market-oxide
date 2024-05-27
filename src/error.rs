@@ -28,25 +28,25 @@ pub enum AppError {
     Unauthorized(String),
 
     // internal
-    #[error("{0}")]
+    #[error("Unexpected eror: {0}")]
     Unexpected(String),
 
-    #[error(transparent)]
+    #[error("Tungstenite error: {0}")]
     Tungstenite(#[from] tokio_tungstenite::tungstenite::Error),
 
-    #[error(transparent)]
+    #[error("SerdeJson error: {0}")]
     SerdeJson(#[from] serde_json::Error),
 
-    #[error(transparent)]
+    #[error("Database error: {0}")]
     Database(#[from] sea_orm::error::DbErr),
 
-    #[error(transparent)]
+    #[error("Redis error: {0}")]
     Redis(#[from] deadpool_redis::PoolError),
 
-    #[error(transparent)]
+    #[error("HttpRequest error: {0}")]
     HttpRequest(#[from] reqwest::Error),
 
-    #[error(transparent)]
+    #[error("Cosmos error: {0}")]
     Cosmos(#[from] crate::service::CosmosClientError),
 
     #[error("{0}")]

@@ -1,11 +1,8 @@
 mod background;
 mod cronjob_expression;
 
-use std::time::Duration;
-
-use crate::error::AppError;
-
 use self::{background::Background, cronjob_expression::CronExpression};
+use crate::error::AppError;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 
 pub async fn background() {
@@ -43,7 +40,6 @@ pub async fn background() {
 // }
 
 async fn run_per_10_seconds(_db: DatabaseConnection) -> Result<(), AppError> {
-    tokio::time::sleep(Duration::from_secs(10)).await;
     println!("run every 10 secords");
-    Err(AppError::Unexpected("???? error".to_owned()))
+    Ok(())
 }
