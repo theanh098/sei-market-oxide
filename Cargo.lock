@@ -1791,6 +1791,7 @@ dependencies = [
  "futures",
  "futures-util",
  "jsonwebtoken",
+ "lazy_static",
  "prost",
  "reqwest 0.12.4",
  "sea-orm",

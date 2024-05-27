@@ -21,8 +21,8 @@ name = "cw721-stream"
 path = "./src/bin/cw721.rs"
 
 [[bin]]
-name = "background"
-path = "./src/bin/background.rs"
+name = "schedule"
+path = "./src/bin/schedule.rs"
 
 [dependencies]
 axum = { version = "*", features = ["http2"] }
@@ -49,6 +49,7 @@ utoipa-swagger-ui = { version = "*", features = ["axum"] }
 utoipa = { version = "*", features = ["axum_extras"] }
 futures = "*"
 cron = "*"
+lazy_static = "1.4.0"
 
 [dependencies.sea-orm]
 version = "*"

@@ -1,8 +1,12 @@
 mod background;
 mod cronjob_expression;
 
+use std::time::Duration;
+
+use crate::error::AppError;
+
 use self::{background::Background, cronjob_expression::CronExpression};
-use sea_orm::{ConnectOptions, Database};
+use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 
 pub async fn background() {
     dotenv::dotenv().ok();
@@ -15,13 +19,31 @@ pub async fn background() {
 
     Background::new()
         .set_context(db)
-        .add_job(CronExpression::Every10Seconds, |_db| async {
-            println!("hello kitty");
-
-            Ok(())
+        // .add_job(CronExpression::EverySecond, &|db| {
+        //     Box::pin(async move { run_per_second(db).await })
+        // })
+        // .add_job(CronExpression::Every5Seconds, &|db| {
+        //     Box::pin(async move { run_per_5_seconds(db).await })
+        // })
+        .add_job("run??", CronExpression::Every10Seconds, &|db| {
+            Box::pin(async move { run_per_10_seconds(db).await })
         })
         .start()
         .await;
+}
 
-    // loop {}
+// async fn run_per_second(_db: DatabaseConnection) -> Result<(), AppError> {
+//     println!("run every 1 secord");
+//     Ok(())
+// }
+
+// async fn run_per_5_seconds(_db: DatabaseConnection) -> Result<(), AppError> {
+//     println!("run every 5 secords");
+//     Ok(())
+// }
+
+async fn run_per_10_seconds(_db: DatabaseConnection) -> Result<(), AppError> {
+    tokio::time::sleep(Duration::from_secs(10)).await;
+    println!("run every 10 secords");
+    Err(AppError::Unexpected("???? error".to_owned()))
 }
