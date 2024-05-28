@@ -24,6 +24,10 @@ path = "./src/bin/cw721.rs"
 name = "schedule"
 path = "./src/bin/schedule.rs"
 
+[[bin]]
+name = "watcher"
+path = "./src/bin/watcher.rs"
+
 [dependencies]
 axum = { version = "*", features = ["http2"] }
 serde = { version = "*", features = ["derive"] }
@@ -50,6 +54,7 @@ utoipa = { version = "*", features = ["axum_extras"] }
 futures = "*"
 cron = "*"
 lazy_static = "1.4.0"
+sqlx = { version = "*", features = ["runtime-tokio", "postgres"] }
 
 [dependencies.sea-orm]
 version = "*"
