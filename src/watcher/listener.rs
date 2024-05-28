@@ -8,11 +8,13 @@ use std::pin::Pin;
 
 use crate::error::AppError;
 
+use super::trigger::Channel;
+
 type Worker<'r, P> =
     dyn Fn(&'r DatabaseConnection, P) -> Pin<Box<dyn Future<Output = Result<(), AppError>>>>;
 
 pub struct Listener<'r, P> {
-    channels: HashMap<&'static str, &'r Worker<'r, P>>,
+    channels: HashMap<Channel, &'r Worker<'r, P>>,
 }
 
 impl<'r, P> Listener<'r, P>
@@ -25,27 +27,34 @@ where
         }
     }
 
-    pub fn add_watcher(mut self, name: &'static str, worker: &'r Worker<'r, P>) -> Self {
-        self.channels.insert(name, worker);
+    pub fn add_watcher(mut self, channel: Channel, worker: &'r Worker<'r, P>) -> Self {
+        self.channels.insert(channel, worker);
         self
     }
 
-    pub async fn start(&self, db: &'r DatabaseConnection) {
+    pub async fn start(&self, db: &'r DatabaseConnection) -> Result<(), AppError> {
         let pool = db.get_postgres_connection_pool();
-        let mut listener = PgListener::connect_with(pool).await.unwrap();
-        let channels: Vec<&str> = self.channels.keys().into_iter().map(|key| *key).collect();
+        let mut listener = PgListener::connect_with(pool).await?;
+        let channels: Vec<&str> = self
+            .channels
+            .keys()
+            .into_iter()
+            .map(|key| key.to_str())
+            .collect();
 
-        listener.listen_all(channels).await.unwrap();
+        listener.listen_all(channels.clone()).await?;
+
+        println!("🦀 watching on the channels {:?}", channels);
 
         loop {
-            while let Some(notification) = listener.try_recv().await.unwrap() {
+            while let Some(notification) = listener.try_recv().await? {
                 let chanel = notification.channel();
-                let worker = self.channels.get(chanel).unwrap();
+                let worker = self.channels.get(&Channel::from_str(&chanel)).unwrap();
 
-                let payload_string = notification.payload().to_owned();
-                let payload = serde_json::from_str::<P>(&payload_string).unwrap();
+                let payload_string = notification.payload();
+                let payload = serde_json::from_str::<P>(&payload_string)?;
 
-                worker(db, payload).await.unwrap();
+                worker(db, payload).await?;
             }
         }
     }

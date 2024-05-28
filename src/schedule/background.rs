@@ -87,6 +87,8 @@ where
             futures.push(fut);
         }
 
+        println!("🦀 background is running");
+
         futures::future::join_all(futures).await;
     }
 }

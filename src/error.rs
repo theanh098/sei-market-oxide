@@ -49,6 +49,9 @@ pub enum AppError {
     #[error("Cosmos error: {0}")]
     Cosmos(#[from] crate::service::CosmosClientError),
 
+    #[error("Sqlx error: {0}")]
+    Sqlx(#[from] sea_orm::SqlxError),
+
     #[error("{0}")]
     InternalError(String),
 }
